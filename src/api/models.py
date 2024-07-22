@@ -7,10 +7,6 @@ from typing import Optional
 LETTER_MATCH_PATTERN = re.compile(r"^[a-zA-Zа-яА-Я\-]+$")
 
 ### User 
-class TunedModel(BaseModel): 
-    class Config(ConfigDict): 
-        from_attributes = True
-
 class UserCreate(BaseModel):
     username: str
     name: str
@@ -43,3 +39,33 @@ class ShowUser(BaseModel):
     surname: str
     email: EmailStr
     is_active: bool
+
+class DeletedUserResponse(BaseModel): 
+    deleted_user_id: uuid.UUID
+
+class UpdatedUserResponse(BaseModel): 
+    updated_user_id: uuid.UUID
+
+class UpdatedUserRequest(BaseModel): 
+    username: Optional[str] = Field(None, min_length=3)
+    name: Optional[str] = Field(None, min_length=1)
+    surname: Optional[str] = Field(None, min_length=1)
+    email: Optional[EmailStr] = Field(None, min_length=2)
+
+    @field_validator("name", mode="before")
+    @staticmethod
+    def validate_name(value): 
+        if not LETTER_MATCH_PATTERN.match(value): 
+            raise HTTPException(
+                status_code=422, detail="Name should contain only letters"
+            )
+        return value
+    
+    @field_validator("surname", mode="before")
+    @staticmethod
+    def validate_surname(value): 
+        if not LETTER_MATCH_PATTERN.match(value): 
+            raise HTTPException(
+                status_code=422, detail="Surname should contain only letters"
+            )
+        return value
