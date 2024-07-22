@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, APIRouter
+from src.api.main_handlers import user_router
 
 app = FastAPI(
     title="Forum"
@@ -17,7 +18,11 @@ async def read_test():
 
 # Подключение всех "младших роутеров" к основному роутеру
 main_api_router.include_router(test_router)
-
+main_api_router.include_router(
+    user_router, 
+    prefix="/user", 
+    tags=["user"]
+)
 # Подключение основного роутера к приложению
 app.include_router(main_api_router)
 

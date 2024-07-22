@@ -23,3 +23,15 @@ class UserDAL:
         self.db_connect.add(new_user)
         await self.db_connect.flush()
         return new_user
+    
+    async def is_username_taken(self, usernmame: str) -> bool: 
+        query = select(User).filter(User.username == usernmame)
+        result = await self.db_connect.execute(query)
+        user = result.scalars().first()
+        return user is not None
+    
+    async def is_email_taken(self, email: str) -> bool: 
+        query = select(User).filter(User.email == email)
+        result = await self.db_connect.execute(query)
+        user = result.scalars().first()
+        return user is not None 
