@@ -47,6 +47,10 @@ async def _delete_user(user_id: UUID, sesion: AsyncSession) -> Union[UUID, None]
 async def _update_user(user_id: UUID, updated_user_params: dict, session: AsyncSession) -> Union[UUID, None]: 
     async with session.begin(): 
         user_dal = UserDAL(session)
+        if "username" in updated_user_params and await user_dal.is_username_taken(updated_user_params["username"]): 
+            raise HTTPException(status_code=409, detail="Username already taken")
+        if "email" in updated_user_params and await user_dal.is_email_taken(updated_user_params["email"]): 
+            raise HTTPException(status_code=409, detail="Email already taken")
         updated_user_id = await user_dal.update_user(
             user_id=user_id, 
             **updated_user_params
@@ -56,7 +60,7 @@ async def _update_user(user_id: UUID, updated_user_params: dict, session: AsyncS
 async def _get_user_by_id(user_id: UUID, session: AsyncSession) -> Union[User, None]: 
     async with session.begin(): 
         user_dal = UserDAL(session)
-        user = user_dal.get_user_by_id(
+        user = await user_dal.get_user_by_id(
             user_id=user_id
         )
         if user is not None: 

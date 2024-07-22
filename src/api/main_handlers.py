@@ -34,7 +34,7 @@ async def delete_user(
         raise HTTPException(status_code=404, detail=f"User with id {user_id} not found")
     return DeletedUserResponse(deleted_user_id=deleted_user_id)
 
-@user_router.get("/", response_model=ShowUser)
+@user_router.get("-id", response_model=ShowUser)
 async def get_user_by_id(
     user_id: UUID,
     db: AsyncSession = Depends(connect_to_db)
@@ -44,7 +44,7 @@ async def get_user_by_id(
         raise HTTPException(status_code=404, detail=f"User with id {user_id} not found")
     return user_info
 
-@user_router.get("/", response_model=ShowUser)
+@user_router.get("-email", response_model=ShowUser)
 async def get_user_by_email(
     email: str,
     db: AsyncSession = Depends(connect_to_db)
@@ -61,7 +61,7 @@ async def update_user(
     db: AsyncSession = Depends(connect_to_db),
     # current_user: User = Depends(get_current_user_from_token)
 ) -> UpdatedUserResponse: 
-    updated_user_params = body.model_dump(exclude=True)
+    updated_user_params = body.model_dump(exclude_none=True)
     if updated_user_params == {}: 
         raise HTTPException(status_code=422, detail="At least one parameter for user update info should be provided")
     user_for_update = await _get_user_by_id(user_id, db)
