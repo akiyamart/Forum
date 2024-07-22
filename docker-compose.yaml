@@ -5,11 +5,11 @@ services:
     image: postgres:14.1-alpine
     restart: always
     environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASS}
-      - POSTGRES_DB=${DB_NAME}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
     ports: 
-      - "5432:5432"
+      - "${DB_PORT}:5432"
     networks:
       - custom 
   db_test: 
@@ -17,11 +17,11 @@ services:
     image: postgres:14.1-alpine
     restart: always
     environment:
-      - POSTGRES_USER=${DB_USER_TEST}
-      - POSTGRES_PASSWORD=${DB_PASS_TEST}
-      - POSTGRES_DB=${DB_NAME_TEST}
+      POSTGRES_DB: ${DB_NAME_TEST}
+      POSTGRES_USER: ${DB_USER_TEST}
+      POSTGRES_PASSWORD: ${DB_PASS_TEST}
     ports: 
-      - "5433:5432"
+      - "${DB_PORT_TEST}:5432"
     networks:
       - custom 
 networks:
