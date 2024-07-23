@@ -5,7 +5,7 @@ from typing import Union
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.api.models import UserCreate, ShowUser
 from src.database.dals import UserDAL
-from src.database.models import ForumRole, User
+from src.database.models.models import ForumRole, User
 from src.api.handlers.auth.hasher import Hasher
 
 user_router = APIRouter()

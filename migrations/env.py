@@ -32,7 +32,7 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from src.database.models import Base 
+from src.database.models.models import Base 
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata 
 

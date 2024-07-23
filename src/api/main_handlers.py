@@ -8,7 +8,7 @@ from src.api.handlers.users.users import user_router, _create_new_user, _get_use
 from src.api.models import ShowUser, UserCreate, DeletedUserResponse, UpdatedUserResponse, UpdatedUserRequest
 from src.database.session import connect_to_db
 from src.api.handlers.auth.auth import get_current_user_from_token
-from src.database.models import User
+from src.database.models.models import User
 
 logger = getLogger(__name__)
 

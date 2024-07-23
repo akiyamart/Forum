@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Union 
 from sqlalchemy import update, and_, select
 from uuid import UUID
-from src.database.models import User, ForumRole
+from src.database.models.models import User, ForumRole
 
 
 class UserDAL:
