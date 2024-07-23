@@ -35,7 +35,8 @@ async def delete_user(
         raise HTTPException(status_code=404, detail=f"User with id {user_id} not found")
     return DeletedUserResponse(deleted_user_id=deleted_user_id)
 
-@user_router.get("-id", response_model=ShowUser)
+# Объединить хендлеры и провалидировать 
+@user_router.get("/id", response_model=ShowUser)
 async def get_user_by_id(
     user_id: UUID,
     db: AsyncSession = Depends(connect_to_db)
@@ -45,7 +46,7 @@ async def get_user_by_id(
         raise HTTPException(status_code=404, detail=f"User with id {user_id} not found")
     return user_info
 
-@user_router.get("-email", response_model=ShowUser)
+@user_router.get("/email", response_model=ShowUser)
 async def get_user_by_email(
     email: str,
     db: AsyncSession = Depends(connect_to_db)
@@ -54,6 +55,7 @@ async def get_user_by_email(
     if user_info is None: 
         raise HTTPException(status_code=404, detail=f"User with {email} not found")
     return user_info
+#####################
 
 @user_router.patch("/", response_model=UpdatedUserResponse)
 async def update_user(
