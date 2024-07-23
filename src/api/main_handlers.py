@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.api.handlers.users.users import user_router, _create_new_user, _get_user_by_id, _get_user_by_email, _delete_user, _update_user
 from src.api.models import ShowUser, UserCreate, DeletedUserResponse, UpdatedUserResponse, UpdatedUserRequest
 from src.database.session import connect_to_db
+from src.api.handlers.auth.auth import get_current_user_from_token
 from src.database.models import User
 
 logger = getLogger(__name__)
@@ -22,12 +23,12 @@ async def create_user(
 @user_router.delete("/", response_model=DeletedUserResponse)
 async def delete_user(
     user_id: UUID,
-    db: AsyncSession = Depends(connect_to_db) 
-    # current_user: User # Потом сюда прикрутить JWT
+    db: AsyncSession = Depends(connect_to_db),
+    current_user: User = Depends(get_current_user_from_token)
 ) -> DeletedUserResponse:
-    # user_to_delete = await _get_user_by_id(user_id)
-    # if user_to_delete is None: 
-    #     raise HTTPException(status_code=404, detail=f"User with {user_id} not found")
+    user_to_delete = await _get_user_by_id(user_id)
+    if user_to_delete is None: 
+        raise HTTPException(status_code=404, detail=f"User with {user_id} not found")
     # ADD: Permissions
     deleted_user_id = await _delete_user(user_id, db)
     if deleted_user_id is None: 
