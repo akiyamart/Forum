@@ -1,16 +1,10 @@
 import uuid 
-from enum import Enum
 from sqlalchemy import String, Column, Boolean
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import declarative_base
+from src.api.schemas.roles import ForumRole
 
 Base = declarative_base()
-
-
-class ForumRole(str, Enum): 
-    ROLE_PORTAL_USER = "ROLE_PORTAL_USER"
-    ROLE_PORTAL_ADMIN = "ROLE_PORTAL_ADMIN"
-    ROLE_PORTAL_SUPERADMIN = "ROLE_PORTAL_SUPERADMIN"
 
 class User(Base): 
     __tablename__ = "users"
@@ -29,7 +23,7 @@ class User(Base):
         return ForumRole.ROLE_PORTAL_ADMIN in self.roles
     
     @property
-    def is_super(self) -> bool: 
+    def is_superadmin(self) -> bool: 
         return ForumRole.ROLE_PORTAL_SUPERADMIN in self.roles
     
     def add_admin_privilages(self): 

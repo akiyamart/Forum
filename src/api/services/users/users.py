@@ -1,5 +1,4 @@
 from uuid import UUID 
-from fastapi import APIRouter
 from typing import Union, Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.api.schemas.users import UserCreate, ShowUserResponse
@@ -7,13 +6,12 @@ from src.database.dals import UserDAL
 from src.database.models.models import ForumRole, User
 from src.api.services.auth.hasher import Hasher
 
-user_router = APIRouter()
 
 async def create_new_user(body: UserCreate, session: AsyncSession) -> Union[ShowUserResponse, None]: 
     async with session.begin(): 
         user_dal = UserDAL(session)
         
-        if await user_dal.is_username_taken(body.usrname) or await user_dal.is_email_taken(body.email): 
+        if await user_dal.is_username_taken(body.username) or await user_dal.is_email_taken(body.email): 
             return None
     
         user = await user_dal.create_user(

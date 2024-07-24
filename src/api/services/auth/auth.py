@@ -35,10 +35,9 @@ async def get_current_user_from_token(token: str = Depends(oauth2_scheme), db: A
     ) 
     try: 
         payload = jwt.decode(
-            token=token, key=SECRET_KEY, algorithms=ALGORITHM
+            token=token, key=SECRET_KEY, algorithms=[ALGORITHM]
         )
         email: str = payload.get("sub")
-        print(f"uesrname/email extracted is {email}")    
     except JWTError: 
         raise credentials_exception
     user = await _get_user_by_email_for_auth(email=email, session=db)
@@ -52,6 +51,6 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
         expire = datetime.now() + expires_delta
     else: 
         expire = datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"expire": expire})
+    to_encode.update({"exp": expire})
     encode_jwt = jwt.encode(to_encode, SECRET_KEY, ALGORITHM)
     return encode_jwt

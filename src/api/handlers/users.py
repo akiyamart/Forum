@@ -1,15 +1,15 @@
-from fastapi import Depends, HTTPException, Query
+from fastapi import Depends, APIRouter, HTTPException, Query
 from uuid import UUID
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.api.services.users.users import user_router, create_new_user, get_user_by_id, find_user, delete_user, update_user, check_user_permissions
+from src.api.services.users.users import create_new_user, get_user_by_id, find_user, delete_user, update_user, check_user_permissions
 from src.api.schemas.users import ShowUserResponse, UserCreate, DeletedUserResponse, UpdatedUserResponse, UpdatedUserRequest
 from src.database.session import connect_to_db
 from src.api.services.auth.auth import get_current_user_from_token
 from src.database.models.models import User
 
+user_router = APIRouter()
 
-### User
 @user_router.post("/", response_model=ShowUserResponse)
 async def create_user(
     body: UserCreate,
@@ -69,4 +69,4 @@ async def update_user(
     if updated_user_id is None: 
         raise HTTPException(status_code=409, detail="Username or email already taken")
     return UpdatedUserResponse(updated_user_id=updated_user_id)
-    
+
