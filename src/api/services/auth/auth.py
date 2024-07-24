@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, HTTPException
 from src.database.session import connect_to_db
 from src.database.dals import UserDAL
-from src.api.handlers.auth.hasher import Hasher
+from src.api.services.auth.hasher import Hasher
 from src.config import ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 
 login_router = APIRouter()

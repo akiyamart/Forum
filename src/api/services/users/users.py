@@ -2,18 +2,18 @@ from uuid import UUID
 from fastapi import APIRouter
 from typing import Union, Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.api.handlers.users.models import UserCreate, ShowUserResponse, ShowUserRequest
+from src.api.schemas.users import UserCreate, ShowUserResponse
 from src.database.dals import UserDAL
 from src.database.models.models import ForumRole, User
-from src.api.handlers.auth.hasher import Hasher
+from src.api.services.auth.hasher import Hasher
 
 user_router = APIRouter()
 
-async def _create_new_user(body: UserCreate, session: AsyncSession) -> Union[ShowUserResponse, None]: 
+async def create_new_user(body: UserCreate, session: AsyncSession) -> Union[ShowUserResponse, None]: 
     async with session.begin(): 
         user_dal = UserDAL(session)
         
-        if await user_dal.is_username_taken(body.username) or await user_dal.is_email_taken(body.email): 
+        if await user_dal.is_username_taken(body.usrname) or await user_dal.is_email_taken(body.email): 
             return None
     
         user = await user_dal.create_user(
@@ -33,7 +33,7 @@ async def _create_new_user(body: UserCreate, session: AsyncSession) -> Union[Sho
             is_active = user.is_active,
         )
 
-async def _delete_user(user_id: UUID, sesion: AsyncSession) -> Union[UUID, None]: 
+async def delete_user(user_id: UUID, sesion: AsyncSession) -> Union[UUID, None]: 
     async with sesion.begin(): 
         user_dal = UserDAL(sesion)
         deleted_user_id = await user_dal.delete_user(
@@ -41,7 +41,7 @@ async def _delete_user(user_id: UUID, sesion: AsyncSession) -> Union[UUID, None]
         )
         return deleted_user_id
 
-async def _update_user(user_id: UUID, updated_user_params: dict, session: AsyncSession) -> Union[UUID, None]: 
+async def update_user(user_id: UUID, updated_user_params: dict, session: AsyncSession) -> Union[UUID, None]: 
     async with session.begin(): 
         user_dal = UserDAL(session)
         if ("username" in updated_user_params and await user_dal.is_username_taken(updated_user_params["username"])
@@ -55,7 +55,7 @@ async def _update_user(user_id: UUID, updated_user_params: dict, session: AsyncS
         )
         return updated_user_id
 
-async def _get_user_by_id(user_id: UUID, session: AsyncSession) -> Union[User, None]: 
+async def get_user_by_id(user_id: UUID, session: AsyncSession) -> Union[User, None]: 
     async with session.begin(): 
         user_dal = UserDAL(session)
         user = await user_dal.get_user_by_id(
@@ -64,21 +64,21 @@ async def _get_user_by_id(user_id: UUID, session: AsyncSession) -> Union[User, N
         if user is not None: 
             return user
         
-async def _get_user_by_email(email: str, session: AsyncSession) -> Union[User, None]: 
+async def get_user_by_email(email: str, session: AsyncSession) -> Union[User, None]: 
     async with session.begin(): 
         user_dal = UserDAL(session)
         email = await user_dal.get_user_by_email(email=email)
         if email is not None: 
             return email
         
-async def _find_user(uuid: Optional[UUID], email: Optional[str], db: AsyncSession) -> Optional[ShowUserResponse]:
+async def find_user(uuid: Optional[UUID], email: Optional[str], db: AsyncSession) -> Optional[ShowUserResponse]:
     if uuid:
-        return await _get_user_by_id(uuid, db)
+        return await get_user_by_id(uuid, db)
     elif email:
-        return await _get_user_by_email(email, db)
+        return await get_user_by_email(email, db)
     return None
 
-def _check_user_permissions(target_user: User, current_user: User) -> bool:
+def check_user_permissions(target_user: User, current_user: User) -> bool:
     if ForumRole.ROLE_PORTAL_SUPERADMIN in current_user.roles: 
         return False
     if target_user.user_id != current_user.user_id: 

@@ -54,10 +54,6 @@ class UpdatedUserRequest(BaseModel):
                 status_code=422, detail="Surname should contain only letters"
             )
         return value
-    
-class ShowUserRequest(BaseModel):
-    uuid: Optional[uuid.UUID]
-    email: Optional[EmailStr]
 
 class ShowUserResponse(BaseModel): 
     user_id: uuid.UUID
@@ -72,7 +68,3 @@ class DeletedUserResponse(BaseModel):
 
 class UpdatedUserResponse(BaseModel): 
     updated_user_id: uuid.UUID
-
-# Потом убрать из models.py в другой файл (какой-нибудь новый)
-class SearchKey(BaseModel): 
-    pass
