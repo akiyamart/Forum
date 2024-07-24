@@ -6,7 +6,6 @@ from typing import Optional
 
 LETTER_MATCH_PATTERN = re.compile(r"^[a-zA-Zа-яА-Я\-]+$")
 
-### User 
 class UserCreate(BaseModel):
     username: str
     name: str
@@ -32,20 +31,6 @@ class UserCreate(BaseModel):
             )
         return value
     
-class ShowUser(BaseModel): 
-    user_id: uuid.UUID
-    username: str
-    name: str
-    surname: str
-    email: EmailStr
-    is_active: bool
-
-class DeletedUserResponse(BaseModel): 
-    deleted_user_id: uuid.UUID
-
-class UpdatedUserResponse(BaseModel): 
-    updated_user_id: uuid.UUID
-
 class UpdatedUserRequest(BaseModel): 
     username: Optional[str] = Field(None, min_length=3)
     name: Optional[str] = Field(None, min_length=1)
@@ -69,3 +54,25 @@ class UpdatedUserRequest(BaseModel):
                 status_code=422, detail="Surname should contain only letters"
             )
         return value
+    
+class ShowUserRequest(BaseModel):
+    uuid: Optional[uuid.UUID]
+    email: Optional[EmailStr]
+
+class ShowUserResponse(BaseModel): 
+    user_id: uuid.UUID
+    username: str
+    name: str
+    surname: str
+    email: EmailStr
+    is_active: bool
+
+class DeletedUserResponse(BaseModel): 
+    deleted_user_id: uuid.UUID
+
+class UpdatedUserResponse(BaseModel): 
+    updated_user_id: uuid.UUID
+
+# Потом убрать из models.py в другой файл (какой-нибудь новый)
+class SearchKey(BaseModel): 
+    pass

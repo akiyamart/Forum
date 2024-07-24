@@ -1,11 +1,11 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Query
 from uuid import UUID
+from typing import Optional
 from logging import getLogger
-from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.exc import IntegrityError
+from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.api.handlers.users.users import user_router, _create_new_user, _get_user_by_id, _get_user_by_email, _delete_user, _update_user, _check_user_permissions
-from src.api.models import ShowUser, UserCreate, DeletedUserResponse, UpdatedUserResponse, UpdatedUserRequest
+from src.api.handlers.users.users import user_router, _create_new_user, _get_user_by_id, _find_user, _delete_user, _update_user, _check_user_permissions
+from src.api.handlers.users.models import ShowUserRequest,ShowUserResponse, UserCreate, DeletedUserResponse, UpdatedUserResponse, UpdatedUserRequest
 from src.database.session import connect_to_db
 from src.api.handlers.auth.auth import get_current_user_from_token
 from src.database.models.models import User
@@ -13,12 +13,15 @@ from src.database.models.models import User
 logger = getLogger(__name__)
 
 ### User
-@user_router.post("/", response_model=ShowUser)
+@user_router.post("/", response_model=ShowUserResponse)
 async def create_user(
     body: UserCreate,
     db: AsyncSession = Depends(connect_to_db)
-) -> ShowUser: 
-    return await _create_new_user(body, db)
+) -> ShowUserResponse: 
+    new_user = await _create_new_user(body, db)
+    if new_user is None: 
+        raise HTTPException(status_code=409, detail="Username or email already taken")
+    return new_user
 
 @user_router.delete("/", response_model=DeletedUserResponse)
 async def delete_user(
@@ -39,27 +42,16 @@ async def delete_user(
         raise HTTPException(status_code=404, detail=f"User with id {user_id} not found")
     return DeletedUserResponse(deleted_user_id=deleted_user_id)
 
-# Объединить хендлеры и провалидировать 
-@user_router.get("/id", response_model=ShowUser)
-async def get_user_by_id(
-    user_id: UUID,
+@user_router.get("/", response_model=ShowUserResponse)
+async def get_user(
+    uuid: Optional[UUID] = Query(None),
+    email: Optional[str] = Query(None),
     db: AsyncSession = Depends(connect_to_db)
-) -> ShowUser: 
-    user_info = await _get_user_by_id(user_id, db)
-    if user_info is None: 
-        raise HTTPException(status_code=404, detail=f"User with id {user_id} not found")
+) -> ShowUserResponse: 
+    user_info = await _find_user(uuid, email, db)
+    if user_info is None:
+        raise HTTPException(status_code=404, detail="User not found")
     return user_info
-
-@user_router.get("/email", response_model=ShowUser)
-async def get_user_by_email(
-    email: str,
-    db: AsyncSession = Depends(connect_to_db)
-) -> ShowUser: 
-    user_info = await _get_user_by_email(email, db)
-    if user_info is None: 
-        raise HTTPException(status_code=404, detail=f"User with {email} not found")
-    return user_info
-#####################
 
 @user_router.patch("/", response_model=UpdatedUserResponse)
 async def update_user(
@@ -76,8 +68,8 @@ async def update_user(
         raise HTTPException(status_code=404, detail=f"User with id {user_id} not found.")
     if not _check_user_permissions(target_user=user_for_update, current_user=current_user):
         raise HTTPException(status_code=403, detail="Forbidden")
-    try:
-        updated_user_id = await _update_user(user_id=user_id, session=db, updated_user_params=updated_user_params)
-        return UpdatedUserResponse(updated_user_id=updated_user_id)
-    except IntegrityError as err: 
-        logger.error(err)
+    updated_user_id = await _update_user(user_id=user_id, session=db, updated_user_params=updated_user_params)
+    if updated_user_id is None: 
+        raise HTTPException(status_code=409, detail="Username or email already taken")
+    return UpdatedUserResponse(updated_user_id=updated_user_id)
+    
