@@ -4,7 +4,7 @@ from logging import getLogger
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.api.handlers.users.users import user_router, _create_new_user, _get_user_by_id, _get_user_by_email, _delete_user, _update_user
+from src.api.handlers.users.users import user_router, _create_new_user, _get_user_by_id, _get_user_by_email, _delete_user, _update_user, _check_user_permissions
 from src.api.models import ShowUser, UserCreate, DeletedUserResponse, UpdatedUserResponse, UpdatedUserRequest
 from src.database.session import connect_to_db
 from src.api.handlers.auth.auth import get_current_user_from_token
@@ -29,7 +29,11 @@ async def delete_user(
     user_to_delete = await _get_user_by_id(user_id)
     if user_to_delete is None: 
         raise HTTPException(status_code=404, detail=f"User with {user_id} not found")
-    # ADD: Permissions
+    if not _check_user_permissions( 
+        target_user=user_to_delete, 
+        current_user=current_user
+    ):
+        raise HTTPException(status_code=403, detail="Forbidden")
     deleted_user_id = await _delete_user(user_id, db)
     if deleted_user_id is None: 
         raise HTTPException(status_code=404, detail=f"User with id {user_id} not found")
@@ -62,7 +66,7 @@ async def update_user(
     user_id: UUID, 
     body: UpdatedUserRequest, 
     db: AsyncSession = Depends(connect_to_db),
-    # current_user: User = Depends(get_current_user_from_token)
+    current_user: User = Depends(get_current_user_from_token)
 ) -> UpdatedUserResponse: 
     updated_user_params = body.model_dump(exclude_none=True)
     if updated_user_params == {}: 
@@ -70,8 +74,8 @@ async def update_user(
     user_for_update = await _get_user_by_id(user_id, db)
     if user_for_update is None:
         raise HTTPException(status_code=404, detail=f"User with id {user_id} not found.")
-    # if not check_user_permissions(target_user=user_for_update, current_user=current_user):
-    #     raise HTTPException(status_code=403, detail="Forbidden")
+    if not _check_user_permissions(target_user=user_for_update, current_user=current_user):
+        raise HTTPException(status_code=403, detail="Forbidden")
     try:
         updated_user_id = await _update_user(user_id=user_id, session=db, updated_user_params=updated_user_params)
         return UpdatedUserResponse(updated_user_id=updated_user_id)

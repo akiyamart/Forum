@@ -72,3 +72,21 @@ async def _get_user_by_email(email: str, session: AsyncSession) -> Union[User, N
         email = await user_dal.get_user_by_email(email=email)
         if email is not None: 
             return email
+        
+def _check_user_permissions(target_user: User, current_user: User) -> bool:
+    if ForumRole.ROLE_PORTAL_SUPERADMIN in current_user.roles: 
+        raise HTTPException(status_code=406, detail="Superadmin cannot be deleted with via API")
+    if target_user.user_id != current_user.user_id: 
+        if not {
+            ForumRole.ROLE_PORTAL_ADMIN, 
+            ForumRole.ROLE_PORTAL_SUPERADMIN
+        }.intersection(current_user.roles):
+            return False
+        if (
+            ForumRole.ROLE_PORTAL_ADMIN in target_user.roles
+            and ForumRole.ROLE_PORTAL_ADMIN in current_user.roles
+        ):
+            return False
+        if ForumRole.ROLE_PORTAL_ADMIN in target_user.rolew and ForumRole.ROLE_PORTAL_ADMIN in current_user.roles:
+            return False
+        return True
