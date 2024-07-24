@@ -11,7 +11,7 @@ from src.api.services.auth.hasher import Hasher
 from src.config import ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 
 login_router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 async def _get_user_by_email_for_auth(email: str, session: AsyncSession): 
     async with session.begin(): 
@@ -38,11 +38,13 @@ async def get_current_user_from_token(token: str = Depends(oauth2_scheme), db: A
             token=token, key=SECRET_KEY, algorithms=[ALGORITHM]
         )
         email: str = payload.get("sub")
+        if email is None: 
+            raise credentials_exception
     except JWTError: 
         raise credentials_exception
     user = await _get_user_by_email_for_auth(email=email, session=db)
     if user is None: 
-        return None
+        raise HTTPException(status_code=500, detail="")
     return user
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None): 

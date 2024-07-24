@@ -21,22 +21,22 @@ async def create_user(
     return new_user
 
 @user_router.delete("/", response_model=DeletedUserResponse)
-async def delete_user(
+async def delete_user_endpoint(
     user_id: UUID,
     db: AsyncSession = Depends(connect_to_db),
     current_user: User = Depends(get_current_user_from_token)
 ) -> DeletedUserResponse:
-    user_to_delete = await get_user_by_id(user_id)
-    if user_to_delete is None: 
-        raise HTTPException(status_code=404, detail=f"User with {user_id} not found")
-    if not check_user_permissions( 
-        target_user=user_to_delete, 
-        current_user=current_user
-    ):
-        raise HTTPException(status_code=403, detail="Forbidden")
-    deleted_user_id = await delete_user(user_id, db)
-    if deleted_user_id is None: 
+    user_to_delete = await get_user_by_id(user_id, db)
+    if user_to_delete is None:
         raise HTTPException(status_code=404, detail=f"User with id {user_id} not found")
+    
+    if not check_user_permissions(target_user=user_to_delete, current_user=current_user):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    
+    deleted_user_id = await delete_user(user_id, db)
+    if deleted_user_id is None:
+        raise HTTPException(status_code=404, detail=f"User with id {user_id} not found")
+    
     return DeletedUserResponse(deleted_user_id=deleted_user_id)
 
 @user_router.get("/", response_model=ShowUserResponse)
@@ -51,7 +51,7 @@ async def get_user(
     return user_info
 
 @user_router.patch("/", response_model=UpdatedUserResponse)
-async def update_user(
+async def update_user_endpoint(
     user_id: UUID, 
     body: UpdatedUserRequest, 
     db: AsyncSession = Depends(connect_to_db),

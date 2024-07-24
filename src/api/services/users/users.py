@@ -77,7 +77,7 @@ async def find_user(uuid: Optional[UUID], email: Optional[str], db: AsyncSession
     return None
 
 def check_user_permissions(target_user: User, current_user: User) -> bool:
-    if ForumRole.ROLE_PORTAL_SUPERADMIN in current_user.roles: 
+    if ForumRole.ROLE_PORTAL_SUPERADMIN in target_user.roles: 
         return False
     if target_user.user_id != current_user.user_id: 
         if not {
@@ -90,6 +90,4 @@ def check_user_permissions(target_user: User, current_user: User) -> bool:
             and ForumRole.ROLE_PORTAL_ADMIN in current_user.roles
         ):
             return False
-        if ForumRole.ROLE_PORTAL_ADMIN in target_user.rolew and ForumRole.ROLE_PORTAL_ADMIN in current_user.roles:
-            return False
-        return True
+    return True
