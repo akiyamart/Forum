@@ -3,13 +3,11 @@ from fastapi import FastAPI, APIRouter
 from src.api.handlers.users import user_router
 from src.api.handlers.roles import role_router
 from src.api.handlers.auth import login_router
-from src.api.services.tokens.jwt import refresh_access_token
 
 app = FastAPI(
     title="Forum"
 )
 
-app.middleware("http")(refresh_access_token)
 
 main_router = APIRouter()
 

@@ -1,5 +1,5 @@
 from uuid import UUID 
-from typing import Union, Any, Optional
+from typing import Union, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.api.schemas.users import UserCreate, ShowUserResponse
 from src.database.dals import UserDAL

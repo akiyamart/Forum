@@ -7,6 +7,7 @@ from src.api.schemas.users import ShowUserResponse, UserCreate, DeletedUserRespo
 from src.database.session import connect_to_db
 from src.api.services.auth.auth import get_current_user_from_token
 from src.database.models.models import User
+from src.api.services.tokens.jwt import refresh_access_token
 
 user_router = APIRouter()
 
@@ -24,8 +25,13 @@ async def create_user(
 async def delete_user_endpoint(
     user_id: UUID,
     db: AsyncSession = Depends(connect_to_db),
-    current_user: User = Depends(get_current_user_from_token)
+    current_user: User = Depends(get_current_user_from_token),
+    new_access_token: str = Depends(refresh_access_token)
 ) -> DeletedUserResponse:
+    if new_access_token:
+        to_return = {"message": "Token refreshed", "access_token": new_access_token}
+    to_return = None
+    
     user_to_delete = await get_user_by_id(user_id, db)
     if user_to_delete is None:
         raise HTTPException(status_code=404, detail=f"User with id {user_id} not found")
