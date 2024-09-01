@@ -29,8 +29,7 @@ async def delete_user_endpoint(
     new_access_token: str = Depends(refresh_access_token)
 ) -> DeletedUserResponse:
     if new_access_token:
-        to_return = {"message": "Token refreshed", "access_token": new_access_token}
-    to_return = None
+        return {"message": "Token refreshed", "access_token": new_access_token}
     
     user_to_delete = await get_user_by_id(user_id, db)
     if user_to_delete is None:
@@ -76,3 +75,10 @@ async def update_user_endpoint(
         raise HTTPException(status_code=409, detail="Username or email already taken")
     return UpdatedUserResponse(updated_user_id=updated_user_id)
 
+@user_router.post("/secure-endpoint")
+async def secure_endpoint(
+    new_access_token: Optional[str] = Depends(refresh_access_token),
+):
+    if new_access_token:
+        return {"message": "Token refreshed", "access_token": new_access_token}
+    return {"message": "Secure content"}
